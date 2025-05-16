@@ -5,9 +5,9 @@
       <!-- Marque -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Marque</label>
-        <select 
-          v-model="localFilters.brand" 
-          @change="updateFilters"
+        <select
+          v-model="filters.brand"
+          @change="handleFilterChange"
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
         >
           <option value="">Toutes les marques</option>
@@ -18,11 +18,11 @@
       <!-- Modèle -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Modèle</label>
-        <select 
-          v-model="localFilters.model" 
-          @change="updateFilters"
+        <select
+          v-model="filters.model"
+          @change="handleFilterChange"
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-          :disabled="!localFilters.brand"
+          :disabled="!filters.brand"
         >
           <option value="">Tous les modèles</option>
           <option v-for="model in availableModels" :key="model" :value="model">{{ model }}</option>
@@ -32,12 +32,89 @@
         </div>
       </div>
       
-      <!-- ... Autres filtres (Prix, Année, Carburant, Transmission) ... -->
+      <!-- Prix Min -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Prix minimum</label>
+        <input
+          type="number"
+          v-model.number="filters.min_price"
+          @input="debounceFilterChange"
+          placeholder="Min €"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+        />
+      </div>
+      
+      <!-- Prix Max -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Prix maximum</label>
+        <input
+          type="number"
+          v-model.number="filters.max_price"
+          @input="debounceFilterChange"
+          placeholder="Max €"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+        />
+      </div>
+      
+      <!-- Année Min -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Année min</label>
+        <select
+          v-model.number="filters.min_year"
+          @change="handleFilterChange"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          <option :value="null">Toutes</option>
+          <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+        </select>
+      </div>
+      
+      <!-- Année Max -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Année max</label>
+        <select
+          v-model.number="filters.max_year"
+          @change="handleFilterChange"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          <option :value="null">Toutes</option>
+          <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+        </select>
+      </div>
+      
+      <!-- Type de carburant -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Carburant</label>
+        <select
+          v-model="filters.fuel_type"
+          @change="handleFilterChange"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          <option value="">Tous</option>
+          <option v-for="fuel in availableFuelTypes" :key="fuel" :value="fuel">{{ fuel }}</option>
+        </select>
+      </div>
+      
+      <!-- Transmission -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Transmission</label>
+        <select
+          v-model="filters.transmission"
+          @change="handleFilterChange"
+          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          <option value="">Toutes</option>
+          <option v-for="trans in availableTransmissions" :key="trans" :value="trans">{{ trans }}</option>
+        </select>
+      </div>
     </div>
     
     <!-- Bouton de réinitialisation -->
     <div class="mt-4 flex justify-end">
-      <button @click="$emit('reset-filters')" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+      <button 
+        @click="$emit('reset-filters')" 
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+      >
         Réinitialiser les filtres
       </button>
     </div>
@@ -45,7 +122,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
   filters: {
@@ -78,24 +155,15 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:filters', 'filter-change', 'reset-filters']);
+// Émettre les événements pour les parents
+const emit = defineEmits(['update:filters', 'filter-change', 'reset-filters', 'debounce-filter-change']);
 
-// Créer une copie locale des filtres
-const localFilters = reactive({ ...props.filters });
-
-// Observer les changements de props et mettre à jour les filtres locaux
-watch(() => props.filters, (newFilters) => {
-  Object.assign(localFilters, newFilters);
-}, { deep: true });
-
-// Mettre à jour les filtres et émettre l'événement de changement
-const updateFilters = () => {
-  emit('update:filters', localFilters);
+// Exposer les fonctions du composable parent pour pouvoir les utiliser ici
+const handleFilterChange = () => {
   emit('filter-change');
 };
 
-// Observer les changements locaux et émettre les mises à jour
-watch(localFilters, (newFilters) => {
-  emit('update:filters', newFilters);
-}, { deep: true });
+const debounceFilterChange = () => {
+  emit('debounce-filter-change');
+};
 </script>

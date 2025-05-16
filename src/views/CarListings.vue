@@ -6,16 +6,17 @@
       
       <!-- Filtres -->
       <CarFilters 
-        v-model:filters="filters"
-        :available-brands="availableBrands"
-        :available-models="availableModels"
-        :available-years="availableYears"
-        :available-fuel-types="availableFuelTypes"
-        :available-transmissions="availableTransmissions"
-        :loading-models="loadingModels"
-        @filter-change="handleFilterChange"
-        @reset-filters="resetFilters"
-      />
+  v-model:filters="filters"
+  :available-brands="availableBrands"
+  :available-models="availableModels"
+  :available-years="availableYears"
+  :available-fuel-types="availableFuelTypes"
+  :available-transmissions="availableTransmissions"
+  :loading-models="loadingModels"
+  @filter-change="handleFilterChange"
+  @debounce-filter-change="debounceFilterChange"
+  @reset-filters="resetFilters"
+/>
     </div>
 
     <!-- Indicateur de chargement subtil -->

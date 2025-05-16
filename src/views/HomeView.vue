@@ -5,9 +5,12 @@
       La plateforme de référence pour l'achat et la vente de véhicules
     </p>
     <!-- Contenu de la page d'accueil -->
+     <CarListings></CarListings>
   </div>
 </template>
 
 <script setup>
+import CarListings from './CarListings.vue';
+
 // Logique de la page d'accueil
 </script>

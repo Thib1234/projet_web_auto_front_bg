@@ -171,11 +171,13 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuth } from '@/composables/useAuth'  // Changé: utiliser useAuth au lieu de useAuthStore
 
 const router = useRouter()
 const route = useRoute()
-const authStore = useAuthStore()
+
+// Changé: utiliser votre composable useAuth
+const { login, loading, errors, isLoggedIn } = useAuth()
 
 const successMessage = ref('')
 
@@ -186,8 +188,9 @@ const form = reactive({
 })
 
 onMounted(() => {
-  if (authStore.isLoggedIn) {
-    router.push({ name: 'Home' })
+  // Changé: utiliser isLoggedIn.value au lieu de authStore.isLoggedIn
+  if (isLoggedIn.value) {
+    router.push({ name: 'home' })  // Changé: 'home' au lieu de 'Home'
   }
   
   // Afficher un message de succès si on vient de l'inscription
@@ -197,16 +200,18 @@ onMounted(() => {
 })
 
 const handleLogin = async () => {
-  authStore.clearErrors()
+  // Changé: nettoyer les erreurs manuellement car useAuth n'a pas de clearErrors
+  Object.keys(errors).forEach(key => delete errors[key])
   successMessage.value = ''
 
-  const success = await authStore.login({
+  // Changé: utiliser la fonction login du composable
+  const success = await login({
     email: form.email,
     password: form.password
   })
 
   if (success) {
-    const redirectTo = route.query.redirect || { name: 'Home' }
+    const redirectTo = route.query.redirect || { name: 'home' }  // Changé: 'home' au lieu de 'Home'
     
     // Petit délai pour montrer le succès
     successMessage.value = 'Connexion réussie ! Redirection...'

@@ -7,7 +7,6 @@ import './assets/main.css'
 import { useAuth } from './composables/useAuth'
 
 // Configuration globale d'axios
-axios.defaults.withCredentials = true
 axios.defaults.baseURL = 'http://127.0.0.1:8000'
 
 // Vérifier si le token existe dans le localStorage

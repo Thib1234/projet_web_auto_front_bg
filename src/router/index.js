@@ -16,24 +16,28 @@ const requireAuth = (to, from, next) => {
 }
 
 const requireAdmin = (to, from, next) => {
-  const authStore = useAuth()
+  const { isLoggedIn, user } = useAuth() // Changé: récupérer user aussi
   
-  if (!authStore.isLoggedIn) {
+  if (!isLoggedIn.value) { // Changé: ajouter .value
     next({
       name: 'login',
       query: { redirect: to.fullPath }
     })
-  } else if (!authStore.isAdmin) {
-    next({ name: 'home' }) // Rediriger vers l'accueil si pas admin
   } else {
-    next()
+    // Changé: vérifier les rôles correctement
+    const isAdmin = user.value?.roles?.some(role => role.name === 'admin') || false
+    if (!isAdmin) {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
   }
 }
 
 const redirectIfAuthenticated = (to, from, next) => {
-  const authStore = useAuth()
+  const { isLoggedIn } = useAuth() // Changé: utiliser destructuring pour cohérence
   
-  if (authStore.isLoggedIn) {
+  if (isLoggedIn.value) { // Changé: ajouter .value
     next({ name: 'home' })
   } else {
     next()
@@ -57,7 +61,7 @@ const routes = [
     path: '/ads/:id',
     name: 'car-details',
     component: () => import('@/views/CarDetails.vue'),
-    props: true // Pour passer l'id comme prop au composant
+    props: true
   },
   
   // Routes d'authentification (redirige si déjà connecté)
@@ -68,7 +72,7 @@ const routes = [
     beforeEnter: redirectIfAuthenticated,
     meta: { 
       title: 'Connexion',
-      hideNavigation: true // Optionnel pour cacher la navigation
+      hideNavigation: true
     }
   },
   {
@@ -240,12 +244,12 @@ router.beforeEach((to, from, next) => {
 
 // Guard global pour vérifier l'authentification au chargement
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuth()
+  const { user, initAuth } = useAuth() // Changé: utiliser destructuring cohérent
   
   // Si c'est le premier chargement et qu'on a un token, initialiser l'auth
-  if (!authStore.user && localStorage.getItem('token')) {
+  if (!user.value && localStorage.getItem('token')) { // Changé: ajouter .value
     try {
-      await authStore.initAuth()
+      await initAuth()
     } catch (error) {
       console.error('Erreur d\'initialisation de l\'authentification:', error)
     }

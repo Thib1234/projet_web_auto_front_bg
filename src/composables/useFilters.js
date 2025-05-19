@@ -57,11 +57,18 @@ export function useFilters({ fetchAds }) {
     return value;
   };
   
-  // Retirer un filtre spécifique
-  const removeFilter = (key) => {
+const removeFilter = (key) => {
+  if (key === 'all') {
+    
+    Object.keys(filters).forEach(filterKey => {
+      filters[filterKey] = filterKey.startsWith('min_') || filterKey.startsWith('max_') ? null : '';
+    });
+  } else {
     filters[key] = key.startsWith('min_') || key.startsWith('max_') ? null : '';
-    handleFilterChange();
-  };
+  }
+  
+  handleFilterChange();
+};
   
   // Debouncing pour éviter trop d'appels API lors de la saisie
   let debounceTimer;

@@ -7,7 +7,7 @@
         <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center">
           {{ filterLabels[key] }}: {{ formatFilterValue(key, value) }}
           <button 
-            @click="removeFilter(key)" 
+            @click="removeFilter(key)"
             class="ml-2 text-blue-600 hover:text-blue-800 focus:outline-none"
             aria-label="Supprimer ce filtre"
           >
@@ -19,7 +19,7 @@
       </div>
       
       <button 
-        @click="$emit('remove-filter', 'all')" 
+        @click="removeAllFilters"
         class="ml-2 text-sm text-blue-600 hover:text-blue-800 focus:outline-none underline"
       >
         Effacer tous les filtres
@@ -43,6 +43,16 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['remove-filter']);
+
+// Fonction pour supprimer un filtre individuel
+const removeFilter = (key) => {
+  emit('remove-filter', key);
+};
+
+// Fonction pour supprimer tous les filtres
+const removeAllFilters = () => {
+  emit('remove-filter', 'all');
+};
 
 // Fonction pour formater la valeur du filtre selon son type
 const formatFilterValue = (key, value) => {
